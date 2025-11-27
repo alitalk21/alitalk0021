@@ -431,7 +431,7 @@ async function fetchByCategory({ categoryId }) {
     // 종료 조건:
     // - 서버가 더 이상 주지 않음 (0개)
     // - 페이지 크기 미만(마지막 페이지로 추정)
-    if (products.length === 0 && products.length < pageSize) {
+    if (products.length === 0 && products.length < 2) {
       break;
     }
 
@@ -474,15 +474,15 @@ async function fetchByCategory({ categoryId }) {
   const listTasks = { item: [], dataBaseRes: [] };
 
   // ---- divided[1]은 3개로 나눠서 배포
-  //  .slice(0, Math.round(divided[1].length / 3))
-  // .slice(Math.round(divided[1].length / 3), Math.round(2* divided[1].length)/3)
   //  .slice(0,Math.round(divided[1].length)/3)
   //  .slice(Math.round(( divided[1].length) / 3),Math.round(2*divided[1].length)/3)
   //  .slice(Math.round((2 * divided[1].length) / 3),Math.round(divided[1].length))
 
+  // -- 이거 하면 됨 이거 안했음
   // divided[2]은 2개로 나눠서 배포
   //  .slice(0, Math.round(divided[2].length / 2))
-  //  .slice(Math.round(divided[2].length / 2), Math.round(divided[2].length )
+  //  .slice(Math.round(divided[2].length / 2), Math.round(divided[2].length ))
+  // -------------
 
   // ---- divided[5]은 3개로 나눠서 배포
   // .slice(0, Math.round(divided[5].length / 3));
@@ -492,11 +492,8 @@ async function fetchByCategory({ categoryId }) {
   // );
   // .slice(2 * Math.round(divided[5].length / 3), Math.round(divided[5].length));
 
-  const categoryRes = divided[1]
-    .slice(
-      Math.round((2 * divided[1].length) / 3),
-      Math.round(divided[1].length)
-    )
+  const categoryRes = divided[2]
+    .slice(Math.round(divided[2].length / 2), Math.round(divided[2].length))
     .map((item) =>
       limit(async () => {
         const cat = await ProductCategories.findOne({
@@ -543,7 +540,7 @@ async function fetchByCategory({ categoryId }) {
   await Promise.allSettled(categoryRes);
 
   // const categoryRes = async () => {
-  //   let res = await ProductDetail.find({ _id: "1005007938045626" })
+  //   let res = await ProductDetail.find({ _id: "1005006900421471" })
   //     .populate("cId1", "cId cn")
   //     .populate("cId2", "cId cn")
   //     .lean({ virtuals: true });
@@ -596,6 +593,9 @@ async function fetchByCategory({ categoryId }) {
       limit(async () => {
         try {
           // 0) 외부 API
+
+          // item._id= ''
+
           const productIds = [item._id];
 
           const skuData = await withRetry(() => getSkuDetail(item._id), {

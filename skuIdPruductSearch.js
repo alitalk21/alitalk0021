@@ -108,4 +108,4 @@ export async function getSkuDetail(productId) {
   }
 }
 
-getSkuDetail(1005008995339405);
+getSkuDetail(1005009943157236);
