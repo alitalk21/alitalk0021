@@ -242,7 +242,7 @@ const FIELDS = [
 async function fetchJsonWithRetry(
   url,
   {
-    retries = 1, // 총 5회(0..4)
+    retries = 1, // 총 2회(0..4)
     base = 600, // 시작 지연(ms)
     factor = 2,
     jitter = 0.35,
@@ -572,7 +572,7 @@ async function fetchByCategory({ categoryId }) {
 
   // 단일 데이터베이스 요청
   // const categoryRes = async () => {
-  //   let res = await ProductDetail.find({ _id: "1005007986436305" })
+  //   let res = await ProductDetail.find({ _id: "1005008152051252" })
   //     .populate("cId1", "cId cn")
   //     .populate("cId2", "cId cn")
   //     .lean({ virtuals: true });
@@ -644,7 +644,7 @@ async function fetchByCategory({ categoryId }) {
           const productIds = [item._id];
 
           const skuData = await withRetry(() => getSkuDetail(item._id), {
-            retries: 3,
+            retries: 1,
             base: 800,
             max: 10000,
           });
@@ -681,7 +681,7 @@ async function fetchByCategory({ categoryId }) {
           } else {
             const pdRes = await tryCatch(() =>
               withRetry(() => getProductDetailsById(productIds), {
-                retries: 1,
+                retries: 2,
                 base: 800,
                 max: 10000,
               })
@@ -830,7 +830,7 @@ async function fetchByCategory({ categoryId }) {
 
           const skusForInsert = skuList.map((s) => {
             return {
-              sId: String(s.sku_id), // 문자열로 통일
+              // sId: String(s.sku_id), // 문자열로 통일
               c: normalizeCForCompare(s.color ?? ""), // 정규화 통일
               sp: canonSkuProps(s.sku_properties ?? ""), // 정규화 통일
               spKey: normalizeSpForCompare(s.sku_properties ?? ""), // 정규화 통일
@@ -847,7 +847,7 @@ async function fetchByCategory({ categoryId }) {
           // 4) 기존 문서의 sku_id 집합만 얇게 조회 — 경로 "sku_info.sil"
           const doc = await ProductDetail.findById(productId)
             .select(
-              "sku_info.sil.sId sku_info.sil.c sku_info.sil.sp sku_info.sil.pd sku_info.sil.spKey"
+              "sku_info.sil.c sku_info.sil.sp sku_info.sil.pd sku_info.sil.spKey"
             )
             .lean();
 
@@ -893,8 +893,8 @@ async function fetchByCategory({ categoryId }) {
           const lowPriceUpdSkus = [];
 
           for (const item1 of skuList) {
-            const sid = String(item1?.sku_id);
-            if (sid == null) continue;
+            // const sid = String(item1?.sku_id);
+            // if (sid == null) continue;
 
             // if (!existingIds.has(sid)) {
             //   newSkus.push(item1);
@@ -972,7 +972,7 @@ async function fetchByCategory({ categoryId }) {
 
           // 5-2) 금일 첫 sku 업데이트 (오늘 키가 없던 케이스)
           for (const s of updSkus) {
-            const sId = String(s.sku_id);
+            // const sId = String(s.sku_id);
             const cNorm = normalizeCForCompare(s.color);
             const spCanon = canonSkuProps(s.sku_properties);
 
@@ -993,7 +993,7 @@ async function fetchByCategory({ categoryId }) {
                 filter: { _id: productId },
                 update: {
                   $set: {
-                    "sku_info.sil.$[e].sId": sId,
+                    // "sku_info.sil.$[e].sId": sId,
                     "sku_info.sil.$[e].c": cNorm,
                     "sku_info.sil.$[e].link": s.link ?? "",
                     "sku_info.sil.$[e].sp": spCanon,
@@ -1028,7 +1028,7 @@ async function fetchByCategory({ categoryId }) {
 
           // 5-3) 오늘 최저가 갱신 (문서의 오늘가 > 신규가)
           for (const s of lowPriceUpdSkus) {
-            const sId = String(s.sku_id);
+            // const sId = String(s.sku_id);
             const cNorm = normalizeCForCompare(s.color);
             const spCanon = canonSkuProps(s.sku_properties);
 
@@ -1049,7 +1049,7 @@ async function fetchByCategory({ categoryId }) {
                 filter: { _id: productId },
                 update: {
                   $set: {
-                    "sku_info.sil.$[e].sId": sId,
+                    // "sku_info.sil.$[e].sId": sId,
                     "sku_info.sil.$[e].c": cNorm,
                     "sku_info.sil.$[e].link": s.link ?? "",
                     "sku_info.sil.$[e].sp": spCanon,
@@ -1092,7 +1092,7 @@ async function fetchByCategory({ categoryId }) {
               console.log("새로운 업데이트");
 
               return {
-                sId: String(s?.sku_id),
+                // sId: String(s?.sku_id),
                 c: cNorm ?? "",
                 link: s.link,
                 sp: spCanon ?? "",
